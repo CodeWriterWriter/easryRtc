@@ -4,18 +4,16 @@
      	<link rel="stylesheet" type="text/css" href="/easyrtc/easyrtc.css" />
       <script src="/socket.io/socket.io.js"></script>
       <script type="text/javascript" src="/easyrtc/easyrtc.js"></script>
-      <script type="text/javascript" src="js/logic.js"></script>
+      <script type="text/javascript" src="js/bundle.js"></script>
 	</head>
 	<body onload="my_init()">
 		<div id="iam"></div>
 		<form id="peer">
-			Enter ID of person you want to connect to: <input type="text" name="peerID"><br>
-			<input type="button" onclick="connectPeer(peerID.value)" value="SubmitForm"><br><br>
-			<input type="file">
+			Enter ID of person you want to connect to: <input type="text" name="peerID"></input><br>
+			<input type="button" onclick="connectPeer(peerID.value)" value="SubmitForm"></input><br><br>
+			<input type="file" id="filePicker" accept="video/mp4"></input>
 		</form>
-    <video  style="float:left" id="self" width="300" height="200"></video>
-    <div style="position:relative;float:left;width:300px">
-    	<video id="caller" width="300" height="200"></video>
-    </div>
+		<input type="button" onclick=feedIt()></input>
+		<video id="vidya"></video>
 	</body>
 </html>

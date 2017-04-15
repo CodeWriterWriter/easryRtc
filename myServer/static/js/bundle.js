@@ -1,3 +1,4 @@
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var selfEasyrtcid = "";
 window.my_init = function(){
   easyrtc.enableDataChannels(true);
@@ -16,6 +17,7 @@ window.my_init = function(){
   });
 
   easyrtc.connect("synchro-film", loginSuccess, loginFailure);
+  test();
   if (!window.MediaSource) {
       console.log('No Media Source API available');
   }
@@ -23,6 +25,21 @@ window.my_init = function(){
     console.log("we g");
   }
  }
+
+function test() {
+  /*try {
+  	new ffmpeg('../test.mp4', function (err, video) {
+  		if (!err) {
+  			console.log('The video is ready to be processed');
+  		} else {
+  			console.log('Error: ' + err);
+  		}
+  	});
+  } catch (e) {
+  	console.log(e);
+  }*/
+
+}
 
 function performCall(easyrtcid) {
     easyrtc.call(
@@ -93,8 +110,7 @@ window.feedIt = function(){
 var queue=[];
 var sourceBuffer;
 var current=0;
-//RUNS BEFORE DOM IS READY
-//CHANGE WHEN THIS IS CALLED
+
 var video = document.querySelector(".vidya");
 var mediaSource = new MediaSource();
 mediaSource.addEventListener('sourceopen', onSourceOpen.bind(this, video));
@@ -178,9 +194,15 @@ function appendNextMediaSegment(mediaSource) {
   }
 
   var mediaSegment = new Uint8Array(queue.shift());
+
+  // NOTE: If mediaSource.readyState == “ended”, this appendBuffer() call will
+  // cause mediaSource.readyState to transition to "open". The web application
+  // should be prepared to handle multiple “sourceopen” events.
+  //console.log("Send next block");
   mediaSource.sourceBuffers[0].appendBuffer(mediaSegment);
 }
 function onProgress(mediaSource,e) {
+     //console.log("on Progress");
      appendNextMediaSegment(mediaSource);
 }
 
@@ -197,3 +219,5 @@ function onProgress(mediaSource,e) {
 /*function(myId) {
    document.getElementById("iam").innerHTML = "I am " + myId;
 }*/
+
+},{}]},{},[1]);
