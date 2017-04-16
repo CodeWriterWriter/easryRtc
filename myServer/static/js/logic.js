@@ -1,5 +1,25 @@
 var selfEasyrtcid = "";
+var temp=0;
+var queue=[];
+var sourceBuffer;
+var current=0;
+var video;
+var mediaSource = new MediaSource();
+/*require('node-import');
+var ffmpeg = include("ffmpeg-all-codecs.js");*/
+console.log(MediaSource.isTypeSupported('video/mp4; codecs="avc1.4D4028, mp4a.40.2"')); // true
 window.my_init = function(){
+
+  mediaSource.addEventListener('sourceopen', onSourceOpen.bind(this, video));
+  video = document.getElementById("vidya");
+  if (video) {
+    video.src = window.URL.createObjectURL(mediaSource);
+  }
+  else {
+    console.log("no video");
+  }
+
+
   easyrtc.enableDataChannels(true);
   easyrtc.enableVideo(false);
   easyrtc.enableAudio(false);
@@ -44,13 +64,21 @@ function loginSuccess(easyrtcid) {
     //easyrtc_ft.buildFileReceiver(acceptRejectCB, blobAcceptor, receiveStatusCB);
 }
 
-
 function loginFailure(errorCode, message) {
     easyrtc.showError(errorCode, message);
 }
 
+/*window.convert = function() {
+  var file = document.getElementById(filePicker).files[0];
+  if (file) {
+    var results = ffmpeg_run({
+
+    })
+  }
+}*/
+
 //reading chunks
-var temp=0;
+
 function readBlob(time) {
   var files = document.getElementById('filePicker').files;
   if (!files.length) {
@@ -68,7 +96,7 @@ function readBlob(time) {
   reader.onloadend = function(evt) {
 
     if (evt.target.readyState == FileReader.DONE) { // DONE == 2
-      //handleChunk(evt.target.result);
+      handleChunk(evt.target.result);
     }
    };
 
@@ -90,15 +118,7 @@ window.feedIt = function(){
 }
 
 //PLAYING CHUNKS
-var queue=[];
-var sourceBuffer;
-var current=0;
-//RUNS BEFORE DOM IS READY
-//CHANGE WHEN THIS IS CALLED
-var video = document.querySelector(".vidya");
-var mediaSource = new MediaSource();
-mediaSource.addEventListener('sourceopen', onSourceOpen.bind(this, video));
-video.src = window.URL.createObjectURL(mediaSource);
+
 
 function handleChunk(chunk){
 	queue.push(chunk);
@@ -124,7 +144,7 @@ function onSourceOpen(videoTag, e) {
         return;
   	}
 
-    var sourceBuffer = mediaSource.addSourceBuffer('video/mp4');
+    var sourceBuffer = mediaSource.addSourceBuffer('video/mp4; codecs="avc1.4D4028, mp4a.40.2"');
 
     var initSegment = new Uint8Array(queue.shift());
 
@@ -158,10 +178,10 @@ function appendNextMediaSegment(mediaSource) {
 }
 
   // If we have run out of stream data, then signal end of stream.
-  if (!HaveMoreMediaSegments()) {
+  /*if (!HaveMoreMediaSegments()) {
     mediaSource.endOfStream();
     return;
-  }
+  }*/
 
   // Make sure the previous append is not still pending.
   if (mediaSource.sourceBuffers[0].updating){

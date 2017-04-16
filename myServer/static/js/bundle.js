@@ -1,6 +1,26 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var selfEasyrtcid = "";
+var temp=0;
+var queue=[];
+var sourceBuffer;
+var current=0;
+var video;
+var mediaSource = new MediaSource();
+/*require('node-import');
+var ffmpeg = include("ffmpeg-all-codecs.js");*/
+console.log(MediaSource.isTypeSupported('video/mp4; codecs="avc1.4D4028, mp4a.40.2"')); // true
 window.my_init = function(){
+
+  mediaSource.addEventListener('sourceopen', onSourceOpen.bind(this, video));
+  video = document.getElementById("vidya");
+  if (video) {
+    video.src = window.URL.createObjectURL(mediaSource);
+  }
+  else {
+    console.log("no video");
+  }
+
+
   easyrtc.enableDataChannels(true);
   easyrtc.enableVideo(false);
   easyrtc.enableAudio(false);
@@ -17,7 +37,6 @@ window.my_init = function(){
   });
 
   easyrtc.connect("synchro-film", loginSuccess, loginFailure);
-  test();
   if (!window.MediaSource) {
       console.log('No Media Source API available');
   }
@@ -25,21 +44,6 @@ window.my_init = function(){
     console.log("we g");
   }
  }
-
-function test() {
-  /*try {
-  	new ffmpeg('../test.mp4', function (err, video) {
-  		if (!err) {
-  			console.log('The video is ready to be processed');
-  		} else {
-  			console.log('Error: ' + err);
-  		}
-  	});
-  } catch (e) {
-  	console.log(e);
-  }*/
-
-}
 
 function performCall(easyrtcid) {
     easyrtc.call(
@@ -61,13 +65,21 @@ function loginSuccess(easyrtcid) {
     //easyrtc_ft.buildFileReceiver(acceptRejectCB, blobAcceptor, receiveStatusCB);
 }
 
-
 function loginFailure(errorCode, message) {
     easyrtc.showError(errorCode, message);
 }
 
+/*window.convert = function() {
+  var file = document.getElementById(filePicker).files[0];
+  if (file) {
+    var results = ffmpeg_run({
+
+    })
+  }
+}*/
+
 //reading chunks
-var temp=0;
+
 function readBlob(time) {
   var files = document.getElementById('filePicker').files;
   if (!files.length) {
@@ -85,7 +97,7 @@ function readBlob(time) {
   reader.onloadend = function(evt) {
 
     if (evt.target.readyState == FileReader.DONE) { // DONE == 2
-      //handleChunk(evt.target.result);
+      handleChunk(evt.target.result);
     }
    };
 
@@ -107,14 +119,7 @@ window.feedIt = function(){
 }
 
 //PLAYING CHUNKS
-var queue=[];
-var sourceBuffer;
-var current=0;
 
-var video = document.querySelector(".vidya");
-var mediaSource = new MediaSource();
-mediaSource.addEventListener('sourceopen', onSourceOpen.bind(this, video));
-video.src = window.URL.createObjectURL(mediaSource);
 
 function handleChunk(chunk){
 	queue.push(chunk);
@@ -140,7 +145,7 @@ function onSourceOpen(videoTag, e) {
         return;
   	}
 
-    var sourceBuffer = mediaSource.addSourceBuffer('video/mp4');
+    var sourceBuffer = mediaSource.addSourceBuffer('video/mp4; codecs="avc1.4D4028, mp4a.40.2"');
 
     var initSegment = new Uint8Array(queue.shift());
 
@@ -174,10 +179,10 @@ function appendNextMediaSegment(mediaSource) {
 }
 
   // If we have run out of stream data, then signal end of stream.
-  if (!HaveMoreMediaSegments()) {
+  /*if (!HaveMoreMediaSegments()) {
     mediaSource.endOfStream();
     return;
-  }
+  }*/
 
   // Make sure the previous append is not still pending.
   if (mediaSource.sourceBuffers[0].updating){
@@ -194,15 +199,9 @@ function appendNextMediaSegment(mediaSource) {
   }
 
   var mediaSegment = new Uint8Array(queue.shift());
-
-  // NOTE: If mediaSource.readyState == “ended”, this appendBuffer() call will
-  // cause mediaSource.readyState to transition to "open". The web application
-  // should be prepared to handle multiple “sourceopen” events.
-  //console.log("Send next block");
   mediaSource.sourceBuffers[0].appendBuffer(mediaSegment);
 }
 function onProgress(mediaSource,e) {
-     //console.log("on Progress");
      appendNextMediaSegment(mediaSource);
 }
 
