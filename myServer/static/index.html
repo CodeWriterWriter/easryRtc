@@ -11,9 +11,9 @@
 		<form id="peer">
 			Enter ID of person you want to connect to: <input type="text" name="peerID"></input><br>
 			<input type="button" onclick="connectPeer(peerID.value)" value="SubmitForm"></input><br><br>
-			<input type="file" id="filePicker" accept="video/mp4"></input>
+			<input type="file" id="filePicker" accept="video/mp4" onchange="playBack()"></input>
 		</form>
 		<input type="button" onclick=feedIt()></input>
-		<video id="vidya" ></video>
+		<video id="vidya" controls autoplay ></video>
 	</body>
 </html>

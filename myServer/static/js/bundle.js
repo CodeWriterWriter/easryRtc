@@ -62,11 +62,17 @@ window.connectPeer = function(peerID) {
 function loginSuccess(easyrtcid) {
     selfEasyrtcid = easyrtcid;
     document.getElementById("iam").innerHTML = "I am " + easyrtcid;
-    //easyrtc_ft.buildFileReceiver(acceptRejectCB, blobAcceptor, receiveStatusCB);
 }
 
 function loginFailure(errorCode, message) {
     easyrtc.showError(errorCode, message);
+}
+
+window.playBack = function () {
+  var file = document.getElementById('filePicker').files[0];
+  var video = document.getElementById('vidya');
+  var fileURL = URL.createObjectURL(file);
+  video.src = fileURL;
 }
 
 /*window.convert = function() {
