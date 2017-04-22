@@ -1,4 +1,5 @@
 var selfEasyrtcid = "";
+var peerEasyrtcid = "";
 var temp=0;
 var queue=[];
 var sourceBuffer;
@@ -25,7 +26,6 @@ window.my_init = function(){
   easyrtc.enableAudio(false);
   easyrtc.setAcceptChecker(function(easyrtcid, responsefn) {
       responsefn(true);
-      document.getElementById("connectbutton_" + easyrtcid).style.visibility = "hidden";
   });
   easyrtc.setDataChannelOpenListener(function(easyrtcid, usesPeer) {
       console.log("dataOpen");
@@ -34,8 +34,10 @@ window.my_init = function(){
   easyrtc.setDataChannelCloseListener(function(easyrtcid) {
       console.log("dataClosed");
   });
+  easyrtc.setPeerListener(acceptData);
 
   easyrtc.connect("synchro-film", loginSuccess, loginFailure);
+
   if (!window.MediaSource) {
       console.log('No Media Source API available');
   }
@@ -44,10 +46,17 @@ window.my_init = function(){
   }
  }
 
+ function acceptData(who, msgtype, data) {
+   handleChunk(data);
+ }
+
 function performCall(easyrtcid) {
     easyrtc.call(
        easyrtcid,
-       function(easyrtcid) { console.log("completed call to " + easyrtcid);},
+       function(easyrtcid) {
+         console.log("completed call to " + easyrtcid);
+         peerEasyrtcid = easyrtcid;
+        },
        function(errorMessage) { console.log("err:" + errorMessage);},
        function(accepted, bywho) {
           console.log((accepted?"accepted":"rejected")+ " by " + bywho);
@@ -74,14 +83,7 @@ window.playBack = function () {
   video.src = fileURL;
 }
 
-/*window.convert = function() {
-  var file = document.getElementById(filePicker).files[0];
-  if (file) {
-    var results = ffmpeg_run({
 
-    })
-  }
-}*/
 
 //reading chunks
 
@@ -103,6 +105,7 @@ function readBlob(time) {
 
     if (evt.target.readyState == FileReader.DONE) { // DONE == 2
       handleChunk(evt.target.result);
+      easyrtc.sendData(peerEasyrtcid, "data", evt.target.result);
     }
    };
 
@@ -127,6 +130,7 @@ window.feedIt = function(){
 
 
 function handleChunk(chunk){
+  console.log(chunk)
 	queue.push(chunk);
 	current++;
 	if (current==1){
